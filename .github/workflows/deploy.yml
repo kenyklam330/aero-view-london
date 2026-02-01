@@ -1,4 +1,4 @@
-name: Deploy London Game
+name: Deploy AeroView: London by Ken Lam
 on:
   push:
     branches: [ main ]
