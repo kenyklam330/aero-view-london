@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AeroView: London by Ken Lam</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Courier New', Courier, monospace; background: #000; }
+        #map { height: 100%; width: 100%; position: absolute; background: #111; z-index: 1; }
+        
+        /* 🎬 Screens */
+        #splash-screen, #game-over {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 3000; text-align: center; transition: opacity 0.8s ease;
+        }
+        #splash-screen { background: linear-gradient(180deg, #4da6ff 0%, #ffffff 100%); }
+        #game-over { display: none; z-index: 5000; background: radial-gradient(circle, #001122 0%, #000 100%); color: #00ff00; }
+        
+        .uk-title {
+            font-size: 4em; margin-bottom: 5px; font-weight: 900;
+            background: linear-gradient(90deg, #cf142b 0%, #cf142b 10%, #fff 10%, #fff 15%, #00247d 15%, #00247d 85%, #fff 85%, #fff 90%, #cf142b 90%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-text-stroke: 1.5px #ffffff; text-transform: uppercase;
+            filter: drop-shadow(0 0 15px rgba(0,0,0,0.5)); letter-spacing: 2px;
+        }
+
+        /* 🏷️ Game Title Overlay */
+        #game-branding {
+            position: absolute; top: 20px; right: 20px; z-index: 2500;
+            text-align: right; color: #00ff00; background: rgba(0,20,0,0.7);
+            padding: 10px; border: 1px solid #00ff00; font-size: 0.8em;
+        }
+        #game-branding a { color: #00ccff; text-decoration: none; }
+
+        #countdown { 
+            font-size: 4em; border: 3px solid #00ff00; border-radius: 50%; 
+            width: 100px; height: 100px; display: flex; align-items: center; 
+            justify-content: center; margin: 20px auto; background: rgba(0,0,0,0.6); color: #00ff00; 
+        }
+        
+        #systems-text { letter-spacing: 2px; margin-top: 20px; font-weight: bold; color: #00ff00; text-shadow: 1px 1px 3px #000; }
+        
+        input { background: #001a00; border: 1px solid #00ff00; color: #00ff00; padding: 8px; margin: 5px; font-family: inherit; text-align: center; width: 250px; }
+        .setup-btn { background: #00ff00; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+
+        #ignition-btn {
+            display: none; padding: 20px 45px; font-size: 1.6em; background: #cf142b; color: #fff;
+            border: 4px solid #fff; cursor: pointer; font-family: inherit; font-weight: bold;
+            border-radius: 50px; text-transform: uppercase;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+        #plane-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; pointer-events: none; width: 150px; height: 150px; display: flex; align-items: center; justify-content: center; }
+        #plane-img { width: 140px; height: auto; filter: drop-shadow(0 0 15px rgba(0, 255, 0, 0.6)); }
+        
+        #ui-panel { position: absolute; top: 20px; left: 20px; z-index: 2500; background: rgba(0, 20, 0, 0.85); color: #00ff00; padding: 15px; border: 1px solid #00ff00; width: 240px; text-transform: uppercase; }
+        .controls-legend { margin-top: 15px; padding-top: 10px; border-top: 1px dashed #004400; font-size: 0.7em; color: #00aa00; line-height: 1.4; }
+        .key-hint { color: #fff; font-weight: bold; }
+
+        #mini-map-wrapper { position: absolute; bottom: 30px; right: 30px; width: 200px; height: 200px; border: 2px solid #00ff00; border-radius: 50%; z-index: 2500; overflow: hidden; }
+        #mini-map { width: 100%; height: 100%; }
+        #mini-plane-icon { position: absolute; top: 50%; left: 50%; width: 30px; height: 30px; margin-top: -15px; margin-left: -15px; z-index: 2501; pointer-events: none; filter: drop-shadow(0 0 5px #00ff00); }
+    </style>
+</head>
+<body>
+
+    <div id="game-branding">
+        <strong>AeroView: London</strong> by Ken Lam<br>
+        <a href="https://www.linkedin.com/in/ken-yiu-kei-lam/" target="_blank">LinkedIn Profile</a><br>
+        <a href="mailto:kenyklam330@gmail.com">kenyklam330@gmail.com</a>
+    </div>
+
+    <div id="splash-screen">
+        <h1 class="uk-title">AeroView: London</h1>
+        <h2 style="color: #00247d; letter-spacing: 5px;">BY KEN LAM</h2>
+        <div id="setup-area">
+            <div id="countdown-wrap"><div id="countdown">5</div></div>
+        </div>
+        <button id="ignition-btn" onclick="igniteEngines()">START YOUR ENGINES</button>
+        <p id="systems-text">PRE-FLIGHT SYSTEMS CHECK...</p>
+    </div>
+
+    <div id="game-over">
+        <h1 style="font-size: 3em; color: #fff; text-shadow: 0 0 20px #00ccff;">Wonderful Flight!</h1>
+        <p style="font-size: 1.2em;">You've successfully explored the skies of London.</p>
+        <h2 style="color: #00ff00; margin-top: 15px;">Thank you for flying with AeroView, Captain!</h2>
+        <div class="contact-info">
+            <div style="font-weight: bold; color: #fff; margin-bottom: 5px;">Developed by Ken Lam</div>
+            LinkedIn: <a href="https://www.linkedin.com/in/ken-yiu-kei-lam/" target="_blank">ken-yiu-kei-lam</a><br>
+            Email: <a href="mailto:kenyklam330@gmail.com">kenyklam330@gmail.com</a>
+        </div>
+        <button onclick="location.reload()" style="background:#00ff00; border: none; color: #000; padding: 12px 25px; cursor: pointer; margin-top: 25px; font-weight: bold; border-radius: 5px;">FLY AGAIN</button>
+    </div>
+
+    <div id="plane-container"><img id="plane-img" src="Plane_icon_nose_up.png"></div>
+    <div id="mini-map-wrapper"><div id="mini-map"></div><img id="mini-plane-icon" src="Plane_icon_nose_up.png"></div>
+
+    <div id="ui-panel">
+        <div style="font-weight: bold; border-bottom: 1px solid #004400; padding-bottom: 5px; margin-bottom: 10px;">A380-SYSTEMS</div>
+        <div style="margin-bottom: 15px; font-size: 0.9em;">
+            SPEED: <span id="speed-display" style="color: #fff">1</span> KTS | FUEL: <span id="fuel-display" style="color: #fff">100</span>%
+        </div>
+        <button id="mode-toggle-btn" onclick="toggleMapMode()" style="width:100%; padding:8px; background:#004400; color:#00ff00; border:1px solid #00ff00; cursor:pointer;">VIEW: VECTOR 3D</button>
+        <div class="controls-legend">[<span class="key-hint">W/S</span>] SPEED | [<span class="key-hint">A/D</span>] STEER</div>
+    </div>
+
+    <div id="map"></div>
+
+    <script>
+        // Placeholder for GitHub Secrets injection
+        // DO NOT MANUALLY CHANGE THE LINE BELOW
+        const CONFIG_FROM_GITHUB = { API_KEY: "AIzaSyCA8jtTwPhL1I09ZDVKZdlhL9ksTJFBCZE", MAP_ID: "b90ea2dd1a5427b4880e8762" };
+
+        let map, miniMap, isSatellite = false, gameRunning = false;
+        let playerPos = { lat: 51.5060, lng: -0.0760 }, currentHeading = 255, fuel = 100;
+        const SCALE_FACTOR = 0.000005;
+        let currentSpeed = 1 * SCALE_FACTOR; 
+        const keys = {};
+
+        // 🛡️ MULTI-LAYER INITIALIZATION
+        function initSystems() {
+            const storedKey = localStorage.getItem('gmaps_api_key');
+            const storedId = localStorage.getItem('gmaps_map_id');
+
+            // 1. Check if GitHub Action injected real keys
+            if (CONFIG_FROM_GITHUB.API_KEY !== "") {
+                loadGoogleMaps(CONFIG_FROM_GITHUB.API_KEY, CONFIG_FROM_GITHUB.MAP_ID);
+            } 
+            // 2. Check LocalStorage fallback
+            else if (storedKey && storedId) {
+                loadGoogleMaps(storedKey, storedId);
+            } 
+            // 3. Show Manual Input
+            else {
+                showSetupUI();
+            }
+        }
+
+        function showSetupUI() {
+            document.getElementById('countdown-wrap').style.display = 'none';
+            document.getElementById('systems-text').innerText = "SYSTEMS OFFLINE: KEYS REQUIRED";
+            document.getElementById('setup-area').innerHTML = `
+                <input type="text" id="key-in" placeholder="Google Maps API Key"><br>
+                <input type="text" id="id-in" placeholder="Map ID"><br>
+                <button class="setup-btn" onclick="saveCredentials()">INITIALIZE SYSTEMS</button>
+            `;
+        }
+
+        function saveCredentials() {
+            const k = document.getElementById('key-in').value.trim();
+            const i = document.getElementById('id-in').value.trim();
+            if(k && i) {
+                localStorage.setItem('gmaps_api_key', k);
+                localStorage.setItem('gmaps_map_id', i);
+                location.reload();
+            }
+        }
+
+        function loadGoogleMaps(key, id) {
+            localStorage.setItem('gmaps_map_id', id); // Ensure game loop can access it
+            const script = document.createElement("script");
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&v=beta&libraries=maps&callback=initGame`;
+            document.head.appendChild(script);
+            startCountdown();
+        }
+
+        function startCountdown() {
+            let count = 5;
+            const timer = setInterval(() => {
+                count--;
+                if(document.getElementById('countdown')) document.getElementById('countdown').innerText = count;
+                if (count <= 0) {
+                    clearInterval(timer);
+                    document.getElementById('countdown-wrap').style.display = 'none';
+                    document.getElementById('ignition-btn').style.display = 'block';
+                    document.getElementById('systems-text').innerText = "SYSTEMS ONLINE";
+                }
+            }, 1000);
+        }
+
+        function igniteEngines() {
+            document.getElementById('splash-screen').style.opacity = '0';
+            setTimeout(() => { document.getElementById('splash-screen').style.display = 'none'; gameRunning = true; }, 800);
+        }
+
+        function initGame() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: playerPos, zoom: 18, tilt: 65, heading: currentHeading,
+                mapId: localStorage.getItem('gmaps_map_id'), disableDefaultUI: true, gestureHandling: "none"
+            });
+            miniMap = new google.maps.Map(document.getElementById("mini-map"), {
+                center: playerPos, zoom: 14, disableDefaultUI: true, mapTypeId: 'roadmap'
+            });
+            window.addEventListener('keydown', e => keys[e.code] = true);
+            window.addEventListener('keyup', e => keys[e.code] = false);
+            requestAnimationFrame(gameLoop);
+        }
+
+        function toggleMapMode() {
+            isSatellite = !isSatellite;
+            map.setMapTypeId(isSatellite ? 'satellite' : 'roadmap');
+            document.getElementById('mode-toggle-btn').innerText = isSatellite ? 'VIEW: GOOGLE EARTH' : 'VIEW: VECTOR 3D';
+            map.setTilt(65);
+        }
+
+        function gameLoop() {
+            if (!gameRunning) { requestAnimationFrame(gameLoop); return; }
+            if (fuel <= 0) { document.getElementById('game-over').style.display = 'flex'; return; }
+            if (keys['KeyW']) currentSpeed = Math.min(currentSpeed + (0.01 * SCALE_FACTOR), 10 * SCALE_FACTOR);
+            if (keys['KeyS']) currentSpeed = Math.max(currentSpeed - (0.01 * SCALE_FACTOR), 1 * SCALE_FACTOR);
+            if (keys['KeyA']) currentHeading -= 1.0;
+            if (keys['KeyD']) currentHeading += 1.0;
+
+            playerPos.lat += Math.cos(currentHeading * Math.PI / 180) * currentSpeed;
+            playerPos.lng += Math.sin(currentHeading * Math.PI / 180) * currentSpeed;
+            fuel -= (currentSpeed * 300);
+
+            document.getElementById('fuel-display').innerText = Math.max(0, Math.floor(fuel));
+            document.getElementById('speed-display').innerText = Math.floor(currentSpeed / SCALE_FACTOR);
+            map.moveCamera({ center: playerPos, heading: currentHeading });
+            miniMap.setCenter(playerPos);
+            document.getElementById('mini-plane-icon').style.transform = `rotate(${currentHeading}deg)`;
+            requestAnimationFrame(gameLoop);
+        }
+
+        function clearAndReload() { localStorage.clear(); location.reload(); }
+        
+        initSystems();
+    </script>
+</body>
+</html>
