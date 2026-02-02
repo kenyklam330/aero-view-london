@@ -2,8 +2,6 @@
 
 A simple flight simulator experience that lets you pilot an A380 over the skies of London. Built with the Google Maps JavaScript API and its WebGL-powered 3D capabilities.
 
-*(Suggestion: Replace the placeholder below with a screenshot or GIF of the game in action.)*
-
 
 ## Live Demo
 
@@ -77,5 +75,4 @@ Watch your fuel! The game ends when you run out.
 
 *   **Ken Lam**
     *   LinkedIn: [ken-yiu-kei-lam](https://www.linkedin.com/in/ken-yiu-kei-lam/)
-    *
     *   Email: `kenyklam330@gmail.com`
